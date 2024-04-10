@@ -1,4 +1,5 @@
 ﻿using OxuAzz.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace OxuAzz.Dtos.NewDto
 {
@@ -8,6 +9,7 @@ namespace OxuAzz.Dtos.NewDto
         public string Description { get; set; }
         public string ImgUrl { get; set; }
         //Relations
+
         public int CategoryId { get; set; }
     }
 }

@@ -21,35 +21,106 @@ namespace OxuAzz.Controllers
             _context = context;
             _mapper = mapper;
         }
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] NewPostDto dto)
+        [HttpGet]
+        public async Task<IActionResult> GetListAllAsync()
         {
-            
-            
-            New news1 = _mapper.Map<New>(dto);
-            news1.CreatedDate = DateTime.Now;
+            try
+            {
+                var newsList = await _context.News
+                    .Where(x => !x.isDeleted)
+                    .ToListAsync();
 
+                if (newsList == null || newsList.Count == 0)
+                {
+                    return NotFound("No news found.");
+                }
 
-
-            await _context.News.AddAsync(news1);
-            await _context.SaveChangesAsync();
-            return StatusCode(200);
+                return Ok(newsList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync([FromBody] NewPostDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var news1 = _mapper.Map<New>(dto);
+                news1.CreatedDate = DateTime.Now;
+                news1.isDeleted = false;
+
+                await _context.News.AddAsync(news1);
+                await _context.SaveChangesAsync();
+
+                return Ok("News created successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while creating news: {ex.Message}");
+            }
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(int id, [FromBody] NewUpdateDto news)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var updatedNews = await _context.News.FindAsync(id);
             if (updatedNews == null)
             {
                 return NotFound();
             }
+            if (news.CategoryId == 0)
+            {
+                ModelState.AddModelError(nameof(news.CategoryId), "CategoryId field is required.");
+                return BadRequest(ModelState);
+            }
+
             updatedNews.Title = news.Title;
             updatedNews.Description = news.Description;
             updatedNews.ImgUrl = news.ImgUrl;
             updatedNews.UpdatedDate = DateTime.Now;
             updatedNews.CategoryId = news.CategoryId;
-          await  _context.SaveChangesAsync();
-            return StatusCode(200);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok("News updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while updating news: {ex.Message}");
+            }
         }
+        [HttpDelete("{id}")]
+        //Databazadan bir basa data silmek doqru olmadiqi ucun IsDeleted den istifade etdim.
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var removedNew = await _context.News.FindAsync(id);
+            if (removedNew == null)
+            {
+                return NotFound();
+            }
+
+            removedNew.isDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return Ok("News deleted successfully.");
+        }
+
+
     }
 }

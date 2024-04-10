@@ -35,6 +35,25 @@ namespace OxuAzz.Controllers
             await _context.SaveChangesAsync();
             return StatusCode(200);
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateDto(int id,[FromBody] CategoryUpdateDto dto)
+        {
+
+
+            var updatedCategory = await _context.Categories.FindAsync(id);
+            if (updatedCategory == null)
+            {
+                return NotFound();
+            }
+
+            updatedCategory.UpdatedDate = DateTime.Now;
+            updatedCategory.Name = dto.Name;
+           
+            await _context.SaveChangesAsync();
+            return StatusCode(200);
+        }
+
+       
 
     }
 }
