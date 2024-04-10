@@ -1,4 +1,8 @@
 using OxuAzz.Context;
+using OxuAzz.Dtos;
+using OxuAzz.Dtos.NewDto;
+using OxuAzz.Models;
+using OxuAzz.Profils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddAutoMapper(typeof(CategoryMapProfile));
+builder.Services.AddAutoMapper(typeof(NewMapProfile));
+
 
 var app = builder.Build();
 

@@ -74,3 +74,5 @@ C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\refint\OxuAzz.dll
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\OxuAzz.pdb
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\OxuAzz.genruntimeconfig.cache
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\ref\OxuAzz.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\AutoMapper.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\OxuAzz.sourcelink.json
