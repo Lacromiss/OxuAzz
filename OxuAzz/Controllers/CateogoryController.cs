@@ -21,39 +21,101 @@ namespace OxuAzz.Controllers
             _context = context;
             _mapper = mapper;
         }
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CategoryPostDto dto)
+        [HttpGet]
+        public async Task<IActionResult> GetListAllAsync()
         {
+            try
+            {
+                var categoryList = await _context.Categories
+                    .Where(x => !x.isDeleted)
+                    .ToListAsync();
 
+                if (categoryList == null || categoryList.Count == 0)
+                {
+                    return NotFound("No news found.");
+                }
 
-            Category category = _mapper.Map<Category>(dto);
-            category.CreatedDate = DateTime.Now;
+                return Ok(categoryList);
+            }
 
-
-
-            await _context.Categories.AddAsync(category);
-            await _context.SaveChangesAsync();
-            return StatusCode(200);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDto(int id,[FromBody] CategoryUpdateDto dto)
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync([FromBody] CategoryPostDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            try
+            {
+                var category = _mapper.Map<Category>(dto);
+                category.CreatedDate = DateTime.Now;
+                category.isDeleted = false;
+
+                await _context.Categories.AddAsync(category);
+                await _context.SaveChangesAsync();
+
+                return Ok("Category created successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while creating category: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] CategoryUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             var updatedCategory = await _context.Categories.FindAsync(id);
             if (updatedCategory == null)
             {
                 return NotFound();
             }
-
+         
             updatedCategory.UpdatedDate = DateTime.Now;
+
             updatedCategory.Name = dto.Name;
-           
-            await _context.SaveChangesAsync();
-            return StatusCode(200);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok("Category updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while updating category: {ex.Message}");
+            }
         }
 
-       
+        //Databazadan bir basa data silmedim .IsDeleted den istifade etdim.
+        [HttpDelete("{id}")]
+
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            var removedCategory = await _context.Categories.FindAsync(id);
+            if (removedCategory == null)
+            {
+                return NotFound();
+            }
+
+
+            removedCategory.isDeleted = true;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Category deleted successfully.");
+        }
+
 
     }
 }
