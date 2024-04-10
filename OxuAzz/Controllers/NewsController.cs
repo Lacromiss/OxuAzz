@@ -26,13 +26,11 @@ namespace OxuAzz.Controllers
         {
             try
             {
-                var newsList = await _context.News
-                    .Where(x => !x.isDeleted)
-                    .ToListAsync();
+                var newsList = await _context.News.Where(x => !x.isDeleted).ToListAsync();
 
                 if (newsList == null || newsList.Count == 0)
                 {
-                    return NotFound("No news found.");
+                    return NotFound("No news found");
                 }
 
                 return Ok(newsList);
@@ -42,6 +40,53 @@ namespace OxuAzz.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
+
+        [HttpGet("searchByTitle")]
+        public async Task<IActionResult> SearchNews([FromQuery] string keyword)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    return BadRequest("Keyword cannot be empty");
+                }
+
+                var newsList = await _context.News.Where(x => x.Title.Contains(keyword) && !x.isDeleted).ToListAsync();
+
+
+                if (newsList == null || newsList.Count == 0)
+                {
+                    return NotFound("No news found");
+                }
+
+                return Ok(newsList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while searching news: {ex.Message}");
+            }
+        }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> FilterNewsByCategory([FromQuery] int categoryId)
+        {
+            if (categoryId <= 0)
+            {
+                return BadRequest("Invalid category Id");
+            }
+
+            var categoryExists = await _context.Categories.AnyAsync(x => x.Id == categoryId && !x.isDeleted);
+            if (!categoryExists)
+            {
+                return NotFound("Category not found or deleted");
+            }
+
+            var newsList = await _context.News.Where(x => x.isDeleted == false && x.CategoryId == categoryId).ToListAsync();
+
+            return Ok(newsList);
+        }
+
 
 
         [HttpPost]
@@ -84,7 +129,7 @@ namespace OxuAzz.Controllers
             }
             if (news.CategoryId == 0)
             {
-                ModelState.AddModelError(nameof(news.CategoryId), "CategoryId field is required.");
+                ModelState.AddModelError(nameof(news.CategoryId), "CategoryId field is required");
                 return BadRequest(ModelState);
             }
 
@@ -97,7 +142,7 @@ namespace OxuAzz.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                return Ok("News updated successfully.");
+                return Ok("News updated successfully");
             }
             catch (Exception ex)
             {

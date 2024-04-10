@@ -26,13 +26,11 @@ namespace OxuAzz.Controllers
         {
             try
             {
-                var categoryList = await _context.Categories
-                    .Where(x => !x.isDeleted)
-                    .ToListAsync();
+                var categoryList = await _context.Categories.Where(x => !x.isDeleted).ToListAsync();
 
                 if (categoryList == null || categoryList.Count == 0)
                 {
-                    return NotFound("No news found.");
+                    return NotFound("No news found");
                 }
 
                 return Ok(categoryList);
@@ -60,7 +58,7 @@ namespace OxuAzz.Controllers
                 await _context.Categories.AddAsync(category);
                 await _context.SaveChangesAsync();
 
-                return Ok("Category created successfully.");
+                return Ok("Category createdd successfully");
             }
             catch (Exception ex)
             {
@@ -89,7 +87,7 @@ namespace OxuAzz.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                return Ok("Category updated successfully.");
+                return Ok("Category updated successfully");
             }
             catch (Exception ex)
             {
@@ -113,7 +111,7 @@ namespace OxuAzz.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok("Category deleted successfully.");
+            return Ok("Category deleted successfully");
         }
 
 
