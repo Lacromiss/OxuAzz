@@ -51,8 +51,9 @@ namespace OxuAzz.Controllers
                 {
                     return BadRequest("Keyword cannot be empty");
                 }
+                
 
-                var newsList = await _context.News.Where(x => x.Title.Contains(keyword) && !x.isDeleted).ToListAsync();
+                var newsList = await _context.News.Where(x => x.Title.Trim().ToLower().Contains(keyword.Trim().ToLower()) && !x.isDeleted).ToListAsync();
 
 
                 if (newsList == null || newsList.Count == 0)
@@ -68,15 +69,15 @@ namespace OxuAzz.Controllers
             }
         }
 
-        [HttpGet("filter")]
+        [HttpGet("filterNewsByCategory")]
         public async Task<IActionResult> FilterNewsByCategory([FromQuery] int categoryId)
         {
-            if (categoryId <= 0)
+            if (categoryId <= 0 && categoryId==null)
             {
                 return BadRequest("Invalid category Id");
             }
 
-            var categoryExists = await _context.Categories.AnyAsync(x => x.Id == categoryId && !x.isDeleted);
+            var categoryExists = await _context.Categories.AnyAsync(x => x.Id == categoryId && x.isDeleted==false);
             if (!categoryExists)
             {
                 return NotFound("Category not found or deleted");
@@ -84,19 +85,54 @@ namespace OxuAzz.Controllers
 
             var newsList = await _context.News.Where(x => x.isDeleted == false && x.CategoryId == categoryId).ToListAsync();
 
+            if (newsList==null && newsList.Count==0)
+            {
+
+                return BadRequest("News not found or deleted");
+
+            }
             return Ok(newsList);
         }
 
+        [HttpGet("pagination")]
+        public async Task<IActionResult> GetNewsWithPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 8)
+        {
+            if (pageNumber <= 0 || pageSize <= 0  || pageSize>20)
+            {
+                return BadRequest("Invalid page number or page size");
+            }
+
+            var totalItems = await _context.News.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (pageNumber > totalPages)
+            {
+                return NotFound("Page not found");
+            }
+
+            var newsList = await _context.News
+                .Where(x => x.isDeleted == false)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var paginationData = new
+            {
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                PageSize = pageSize,
+                PageNumber = pageNumber,
+                News = newsList
+            };
+
+            return Ok(paginationData);
+        }
 
 
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] NewPostDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+          
             try
             {
                 var news1 = _mapper.Map<New>(dto);
@@ -106,7 +142,7 @@ namespace OxuAzz.Controllers
                 await _context.News.AddAsync(news1);
                 await _context.SaveChangesAsync();
 
-                return Ok("News created successfully.");
+                return Ok("News created successfully");
             }
             catch (Exception ex)
             {
@@ -115,14 +151,13 @@ namespace OxuAzz.Controllers
         }
 
         [HttpPut("{id}")]
+
         public async Task<IActionResult> UpdateAsync(int id, [FromBody] NewUpdateDto news)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+         
 
-            var updatedNews = await _context.News.FindAsync(id);
+
+            var updatedNews = await _context.News.FirstOrDefaultAsync(x=>x.isDeleted==false && x.Id==id);
             if (updatedNews == null)
             {
                 return NotFound();
@@ -133,11 +168,13 @@ namespace OxuAzz.Controllers
                 return BadRequest(ModelState);
             }
 
+
             updatedNews.Title = news.Title;
             updatedNews.Description = news.Description;
             updatedNews.ImgUrl = news.ImgUrl;
             updatedNews.UpdatedDate = DateTime.Now;
             updatedNews.CategoryId = news.CategoryId;
+
 
             try
             {
