@@ -77,7 +77,7 @@ namespace OxuAzz.Controllers
             }
 
 
-            var updatedCategory = await _context.Categories.FindAsync(id);
+            var updatedCategory = await _context.Categories.FirstOrDefaultAsync(x=>x.Id==id && x.isDeleted==false);
             if (updatedCategory == null)
             {
                 return NotFound();
@@ -99,7 +99,7 @@ namespace OxuAzz.Controllers
 
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var removedCategory = await _context.Categories.FindAsync(id);
+            var removedCategory = await _context.Categories.FirstOrDefaultAsync(x=>x.Id==id && x.isDeleted==false);
             if (removedCategory == null)
             {
                 return NotFound();

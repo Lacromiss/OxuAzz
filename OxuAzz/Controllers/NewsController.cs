@@ -201,7 +201,7 @@ namespace OxuAzz.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var removedNew = await _context.News.FindAsync(id);
+            var removedNew = await _context.News.FirstOrDefaultAsync(x=>x.isDeleted==false && x.Id==id);
             if (removedNew == null)
             {
                 return NotFound();
