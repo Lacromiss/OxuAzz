@@ -1,0 +1,1 @@
+Category ve News ucun CRUD lar yazildi. FluentValidationdan istifade edildi. Kateqoriyaya görə filter yazildi .News-in titlesine görə search yazildi . news-in pagenationu yazildi . Postmandan istifade edildi ve backupda elave edildi.
