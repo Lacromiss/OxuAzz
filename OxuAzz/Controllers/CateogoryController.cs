@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,8 @@ using OxuAzz.Context;
 using OxuAzz.Dtos.CategoryDto;
 using OxuAzz.Dtos.NewDto;
 using OxuAzz.Models;
+using OxuAzz.Validations.Categories;
+using OxuAzz.Validations.News.News;
 
 namespace OxuAzz.Controllers
 {
@@ -44,14 +47,14 @@ namespace OxuAzz.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CategoryPostDto dto)
         {
-            if (!ModelState.IsValid)
+            var validationResult = await new CategoryPostValidation().ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(validationResult.Errors);
             }
 
-            try
-            {
-                var category = _mapper.Map<Category>(dto);
+
+            var category = _mapper.Map<Category>(dto);
                 category.CreatedDate = DateTime.Now;
                 category.isDeleted = false;
 
@@ -59,20 +62,20 @@ namespace OxuAzz.Controllers
                 await _context.SaveChangesAsync();
 
                 return Ok("Category createdd successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while creating category: {ex.Message}");
-            }
+            
+           
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] CategoryUpdateDto dto)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] CategoryPostDto dto)
         {
-            if (!ModelState.IsValid)
+
+            var validationResult = await new CategoryPostValidation().ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(validationResult.Errors);
             }
+
 
             var updatedCategory = await _context.Categories.FindAsync(id);
             if (updatedCategory == null)
@@ -84,15 +87,11 @@ namespace OxuAzz.Controllers
 
             updatedCategory.Name = dto.Name;
 
-            try
-            {
+           
                 await _context.SaveChangesAsync();
                 return Ok("Category updated successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while updating category: {ex.Message}");
-            }
+            
+           
         }
 
         //Databazadan bir basa data silmedim .IsDeleted den istifade etdim.

@@ -1,8 +1,13 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.OpenApi.Models;
 using OxuAzz.Context;
 using OxuAzz.Dtos;
 using OxuAzz.Dtos.NewDto;
 using OxuAzz.Models;
 using OxuAzz.Profils;
+using OxuAzz.Validations.News.News;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +20,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddAutoMapper(typeof(CategoryMapProfile));
 builder.Services.AddAutoMapper(typeof(NewMapProfile));
+builder.Services.AddControllers()?.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<NewDtoValidation>());
+
+
+
 
 
 var app = builder.Build();

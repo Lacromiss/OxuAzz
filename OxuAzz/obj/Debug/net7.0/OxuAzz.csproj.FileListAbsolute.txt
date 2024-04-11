@@ -76,3 +76,8 @@ C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\OxuAzz.genruntimeco
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\ref\OxuAzz.dll
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\AutoMapper.dll
 C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\obj\Debug\net7.0\OxuAzz.sourcelink.json
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\FluentValidation.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\FluentValidation.AspNetCore.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\FluentValidation.DependencyInjectionExtensions.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\MicroElements.OpenApi.FluentValidation.dll
+C:\Users\Mustafa\source\repos\OxuAzz\OxuAzz\bin\Debug\net7.0\MicroElements.Swashbuckle.FluentValidation.dll

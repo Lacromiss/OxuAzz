@@ -6,6 +6,8 @@ using OxuAzz.Context;
 using OxuAzz.Dtos;
 using OxuAzz.Dtos.NewDto;
 using OxuAzz.Models;
+using OxuAzz.Validations.News.News;
+using System.ComponentModel.DataAnnotations;
 
 namespace OxuAzz.Controllers
 {
@@ -16,7 +18,7 @@ namespace OxuAzz.Controllers
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
 
-        public NewsController(AppDbContext context, IMapper mapper)
+        public NewsController(AppDbContext context, IMapper mapper )
         {
             _context = context;
             _mapper = mapper;
@@ -132,10 +134,20 @@ namespace OxuAzz.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] NewPostDto dto)
         {
-          
-            try
+
+            var validationResult = await new NewDtoValidation().ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                var news1 = _mapper.Map<New>(dto);
+                return BadRequest(validationResult.Errors);
+            }
+
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == dto.CategoryId && c.isDeleted == false);
+            if (!categoryExists)
+            {
+                return BadRequest("The specified category ID does not exist or is deleted.");
+            }
+
+            var news1 = _mapper.Map<New>(dto);
                 news1.CreatedDate = DateTime.Now;
                 news1.isDeleted = false;
 
@@ -143,29 +155,32 @@ namespace OxuAzz.Controllers
                 await _context.SaveChangesAsync();
 
                 return Ok("News created successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while creating news: {ex.Message}");
-            }
+            
+         
+
+
         }
 
         [HttpPut("{id}")]
 
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] NewUpdateDto news)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] NewPostDto news)
         {
-         
 
+            var validationResult = await new NewDtoValidation().ValidateAsync(news);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
 
             var updatedNews = await _context.News.FirstOrDefaultAsync(x=>x.isDeleted==false && x.Id==id);
             if (updatedNews == null)
             {
                 return NotFound();
             }
-            if (news.CategoryId == 0)
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == news.CategoryId && c.isDeleted == false);
+            if (!categoryExists)
             {
-                ModelState.AddModelError(nameof(news.CategoryId), "CategoryId field is required");
-                return BadRequest(ModelState);
+                return BadRequest("The specified category ID does not exist or is deleted.");
             }
 
 
@@ -176,15 +191,10 @@ namespace OxuAzz.Controllers
             updatedNews.CategoryId = news.CategoryId;
 
 
-            try
-            {
+
                 await _context.SaveChangesAsync();
                 return Ok("News updated successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while updating news: {ex.Message}");
-            }
+
         }
         [HttpDelete("{id}")]
         //Databazadan bir basa data silmek doqru olmadiqi ucun IsDeleted den istifade etdim.
