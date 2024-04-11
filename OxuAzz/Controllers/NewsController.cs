@@ -8,6 +8,8 @@ using OxuAzz.Dtos.NewDto;
 using OxuAzz.Models;
 using OxuAzz.Validations.News.News;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace OxuAzz.Controllers
 {
@@ -70,30 +72,41 @@ namespace OxuAzz.Controllers
                 return StatusCode(500, $"An error occurred while searching news: {ex.Message}");
             }
         }
-
         [HttpGet("filterNewsByCategory")]
-        public async Task<IActionResult> FilterNewsByCategory([FromQuery] int categoryId)
+        public async Task<IActionResult> FilterNewsByCategory([FromQuery] string categoryName)
         {
-            if (categoryId <= 0 && categoryId==null)
+            if (string.IsNullOrWhiteSpace(categoryName))
             {
-                return BadRequest("Invalid category Id");
+                return BadRequest("Category name not found");
             }
 
-            var categoryExists = await _context.Categories.AnyAsync(x => x.Id == categoryId && x.isDeleted==false);
-            if (!categoryExists)
+            var category = await _context.Categories.FirstOrDefaultAsync(x =>
+                x.Name.Trim().ToLower() == categoryName.Trim().ToLower() && !x.isDeleted);
+
+            if (category == null)
             {
                 return NotFound("Category not found or deleted");
             }
 
-            var newsList = await _context.News.Where(x => x.isDeleted == false && x.CategoryId == categoryId).ToListAsync();
+            var newsList = await _context.News
+                .Include(x => x.Category)
+                .Where(x => !x.isDeleted && x.CategoryId == category.Id)
+                .ToListAsync();
 
-            if (newsList==null && newsList.Count==0)
+            if (newsList.Count == 0)
             {
-
                 return BadRequest("News not found or deleted");
-
             }
-            return Ok(newsList);
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,  
+                ReferenceHandler = ReferenceHandler.Preserve,
+            };
+
+            var json = JsonSerializer.Serialize(newsList, options);
+
+            return Ok(json);
         }
 
         [HttpGet("pagination")]

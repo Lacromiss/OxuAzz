@@ -14,12 +14,12 @@ namespace OxuAzz.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CateogoryController : ControllerBase
+    public class CategoryController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
 
-        public CateogoryController(AppDbContext context, IMapper mapper)
+        public CategoryController(AppDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
